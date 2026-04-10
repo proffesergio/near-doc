@@ -39,23 +39,32 @@ function requestNotificationPermission() {
 }
 
 export default function MedsReminder({ lang }: MedsReminderProps) {
-  const [meds, setMeds] = useState<Med[]>([]);
+  const [meds, setMeds] = useState<Med[]>(() => {
+    // Initialize meds from localStorage on first render (client-side only)
+    if (typeof window === "undefined") return [];
+    try {
+      const data = localStorage.getItem(STORAGE_KEY);
+      return data ? JSON.parse(data) : [];
+    } catch {
+      return [];
+    }
+  });
   const [isOpen, setIsOpen] = useState(false);
   const [newName, setNewName] = useState("");
   const [newTime, setNewTime] = useState("08:00");
-  const [mounted, setMounted] = useState(false);
+  const [isClient, setIsClient] = useState(false);
 
   const isBn = lang === "bn";
 
   useEffect(() => {
-    setMeds(loadMeds());
-    setMounted(true);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setIsClient(true);
     requestNotificationPermission();
   }, []);
 
   // Check for due reminders every 30 seconds
   useEffect(() => {
-    if (!mounted) return;
+    if (!isClient) return;
     const interval = setInterval(() => {
       const now = new Date();
       const currentTime = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
@@ -72,7 +81,7 @@ export default function MedsReminder({ lang }: MedsReminderProps) {
       });
     }, 30000);
     return () => clearInterval(interval);
-  }, [mounted, isBn]);
+  }, [isClient, isBn]);
 
   const handleAdd = useCallback(() => {
     if (!newName.trim()) return;
@@ -125,7 +134,7 @@ export default function MedsReminder({ lang }: MedsReminderProps) {
 
   // Reset "taken" status at midnight
   useEffect(() => {
-    if (!mounted) return;
+    if (!isClient) return;
     const checkReset = () => {
       const today = new Date().toISOString().split("T")[0];
       const currentMeds = loadMeds();
@@ -145,13 +154,13 @@ export default function MedsReminder({ lang }: MedsReminderProps) {
     checkReset();
     const interval = setInterval(checkReset, 60000);
     return () => clearInterval(interval);
-  }, [mounted]);
+  }, [isClient]);
 
   const takenCount = meds.filter((m) => m.taken).length;
   const totalCount = meds.length;
   const maxStreak = meds.length > 0 ? Math.max(...meds.map((m) => m.streak)) : 0;
 
-  if (!mounted) return null;
+  if (!isClient) return null;
 
   return (
     <>
