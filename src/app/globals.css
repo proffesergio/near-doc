@@ -60,3 +60,12 @@ body {
   background-size: 200% 100%;
   animation: shimmer 1.5s ease-in-out infinite;
 }
+
+@keyframes emergency-pulse {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 0.3; }
+}
+
+.animate-emergency-pulse {
+  animation: emergency-pulse 2s ease-in-out infinite;
+}

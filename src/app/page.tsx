@@ -7,6 +7,7 @@ import type { Doctor } from "@/lib/doctors";
 import VoiceInput from "@/components/VoiceInput";
 import DoctorCard from "@/components/DoctorCard";
 import AnalysisResult from "@/components/AnalysisResult";
+import EmergencyBanner from "@/components/EmergencyBanner";
 
 interface Analysis {
   department: string;
@@ -19,6 +20,53 @@ interface Analysis {
 
 type AppState = "input" | "loading" | "results" | "error";
 
+const quickSymptoms = {
+  en: [
+    "Headache and fever",
+    "Stomach pain",
+    "Chest pain",
+    "Skin rash and itching",
+    "Sore throat and cough",
+    "Back pain",
+  ],
+  bn: [
+    "মাথাব্যথা ও জ্বর",
+    "পেট ব্যথা",
+    "বুকে ব্যথা",
+    "চামড়ায় র‍্যাশ ও চুলকানি",
+    "গলা ব্যথা ও কাশি",
+    "কোমর ব্যথা",
+  ],
+};
+
+const demoScenarios = {
+  en: [
+    { label: "Try: Chest pain emergency", symptoms: "I have severe chest pain and difficulty breathing since this morning" },
+    { label: "Try: Child with fever", symptoms: "My 3 year old child has high fever and diarrhea for 2 days" },
+    { label: "Try: Mental health", symptoms: "I have been feeling very anxious and can't sleep for weeks" },
+    { label: "Try: Eye problem", symptoms: "My vision is getting blurry and I have eye pain" },
+  ],
+  bn: [
+    { label: "চেষ্টা করুন: বুকে ব্যথা", symptoms: "সকাল থেকে বুকে তীব্র ব্যথা এবং শ্বাসকষ্ট হচ্ছে" },
+    { label: "চেষ্টা করুন: শিশুর জ্বর", symptoms: "আমার ৩ বছরের বাচ্চার ২ দিন ধরে তীব্র জ্বর ও পাতলা পায়খানা" },
+    { label: "চেষ্টা করুন: মানসিক স্বাস্থ্য", symptoms: "কয়েক সপ্তাহ ধরে খুব দুশ্চিন্তা হচ্ছে এবং ঘুম হচ্ছে না" },
+    { label: "চেষ্টা করুন: চোখের সমস্যা", symptoms: "চোখে ঝাপসা দেখছি এবং চোখে ব্যথা হচ্ছে" },
+  ],
+};
+
+const howItWorks = {
+  en: [
+    { step: "1", title: "Describe Symptoms", desc: "Type or speak your symptoms in Bangla or English" },
+    { step: "2", title: "AI Analyzes", desc: "Our system identifies the right medical department" },
+    { step: "3", title: "Find Your Doctor", desc: "Get matched with specialists in Dhaka with clinic details" },
+  ],
+  bn: [
+    { step: "১", title: "উপসর্গ বর্ণনা করুন", desc: "বাংলায় বা ইংরেজিতে আপনার উপসর্গ টাইপ করুন বা বলুন" },
+    { step: "২", title: "AI বিশ্লেষণ", desc: "আমাদের সিস্টেম সঠিক চিকিৎসা বিভাগ চিহ্নিত করে" },
+    { step: "৩", title: "ডাক্তার খুঁজুন", desc: "ঢাকায় ক্লিনিকের বিস্তারিত সহ বিশেষজ্ঞ ডাক্তার পান" },
+  ],
+};
+
 export default function Home() {
   const [lang, setLang] = useState<Lang>("en");
   const [symptoms, setSymptoms] = useState("");
@@ -29,8 +77,13 @@ export default function Home() {
 
   const labels = t[lang];
 
-  const handleAnalyze = useCallback(async () => {
-    if (!symptoms.trim() || symptoms.trim().length < 3) return;
+  const handleAnalyze = useCallback(async (overrideSymptoms?: string) => {
+    const text = overrideSymptoms || symptoms;
+    if (!text.trim() || text.trim().length < 3) return;
+
+    if (overrideSymptoms) {
+      setSymptoms(overrideSymptoms);
+    }
 
     setAppState("loading");
     setErrorMsg("");
@@ -39,7 +92,7 @@ export default function Home() {
       const res = await fetch("/api/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ symptoms: symptoms.trim(), lang }),
+        body: JSON.stringify({ symptoms: text.trim(), lang }),
       });
 
       if (!res.ok) {
@@ -123,6 +176,20 @@ export default function Home() {
                 disabled={appState === "loading"}
               />
 
+              {/* Quick symptom chips */}
+              <div className="flex flex-wrap gap-2 mt-3">
+                {quickSymptoms[lang].map((symptom) => (
+                  <button
+                    key={symptom}
+                    onClick={() => setSymptoms(symptom)}
+                    disabled={appState === "loading"}
+                    className="px-3 py-1.5 text-xs font-medium rounded-full border border-gray-200 bg-gray-50 text-gray-600 hover:bg-sky-50 hover:border-sky-300 hover:text-sky-700 transition-all cursor-pointer disabled:opacity-50"
+                  >
+                    {symptom}
+                  </button>
+                ))}
+              </div>
+
               <div className="flex flex-col sm:flex-row gap-3 mt-4">
                 <VoiceInput
                   lang={lang}
@@ -131,7 +198,7 @@ export default function Home() {
                 />
 
                 <button
-                  onClick={handleAnalyze}
+                  onClick={() => handleAnalyze()}
                   disabled={appState === "loading" || symptoms.trim().length < 3}
                   className="flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm hover:shadow-md cursor-pointer"
                 >
@@ -161,6 +228,60 @@ export default function Home() {
                 </div>
               )}
             </div>
+
+            {/* How it Works */}
+            {appState === "input" && (
+              <div className="mt-10">
+                <h2 className="text-center text-lg font-bold text-gray-800 mb-5">
+                  {lang === "bn" ? "কিভাবে কাজ করে" : "How It Works"}
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  {howItWorks[lang].map((item, i) => (
+                    <div key={i} className="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-5 text-center">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-sky-400 to-blue-600 text-white font-bold text-lg flex items-center justify-center mx-auto mb-3">
+                        {item.step}
+                      </div>
+                      <h3 className="font-bold text-gray-900 mb-1">{item.title}</h3>
+                      <p className="text-sm text-gray-500">{item.desc}</p>
+                      {i < 2 && (
+                        <div className="hidden sm:block absolute top-1/2 -right-3 transform -translate-y-1/2 text-gray-300 text-2xl z-10">
+                          &rarr;
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Demo scenarios */}
+            {appState === "input" && (
+              <div className="mt-8">
+                <h2 className="text-center text-lg font-bold text-gray-800 mb-4">
+                  {lang === "bn" ? "দ্রুত পরীক্ষা করুন" : "Try a Demo Scenario"}
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {demoScenarios[lang].map((scenario, i) => (
+                    <button
+                      key={i}
+                      onClick={() => handleAnalyze(scenario.symptoms)}
+                      className="flex items-center gap-3 bg-white rounded-xl border border-gray-100 shadow-sm p-4 text-left hover:border-sky-300 hover:shadow-md transition-all cursor-pointer group"
+                    >
+                      <div className="w-8 h-8 rounded-lg bg-sky-50 text-sky-600 flex items-center justify-center shrink-0 group-hover:bg-sky-100 transition-colors">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <span className="font-semibold text-gray-800 text-sm block">{scenario.label}</span>
+                        <span className="text-xs text-gray-400 line-clamp-1">{scenario.symptoms}</span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Feature highlights */}
             {appState === "input" && (
@@ -203,6 +324,9 @@ export default function Home() {
         {/* Results */}
         {appState === "results" && analysis && (
           <div className="space-y-6">
+            {/* Emergency banner for high severity */}
+            {analysis.severity === "high" && <EmergencyBanner lang={lang} />}
+
             {/* Searched symptoms */}
             <div className="flex items-center justify-between flex-wrap gap-3">
               <div className="flex items-center gap-2 text-sm text-gray-500">
@@ -252,7 +376,8 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="text-center py-4 text-xs text-gray-400 border-t border-gray-100">
-        {labels.poweredBy}
+        <p>{labels.disclaimer}</p>
+        <p className="mt-1">{labels.poweredBy}</p>
       </footer>
     </div>
   );

@@ -21,6 +21,9 @@ export default function DoctorCard({ doctor, lang, index }: DoctorCardProps) {
   const experience = lang === "bn" ? doctor.experienceBn : doctor.experience;
   const chamberTime = lang === "bn" ? doctor.chamberTimeBn : doctor.chamberTime;
 
+  const mapsQuery = encodeURIComponent(`${doctor.hospital}, ${doctor.location}`);
+  const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${mapsQuery}`;
+
   return (
     <div
       className="animate-fade-in-up bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow p-5"
@@ -75,6 +78,18 @@ export default function DoctorCard({ doctor, lang, index }: DoctorCardProps) {
             <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 text-blue-700 rounded-full font-medium">
               {labels.experience}: {experience}
             </span>
+            <a
+              href={mapsUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 px-3 py-1 bg-emerald-500 text-white rounded-full font-medium hover:bg-emerald-600 transition-colors"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              {lang === "bn" ? "দিকনির্দেশ" : "Directions"}
+            </a>
             <a
               href={`tel:${doctor.phone}`}
               className="inline-flex items-center gap-1 px-3 py-1 bg-sky-500 text-white rounded-full font-medium hover:bg-sky-600 transition-colors ml-auto"
