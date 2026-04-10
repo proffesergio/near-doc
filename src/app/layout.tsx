@@ -29,8 +29,16 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-gradient-to-br from-slate-50 via-sky-50/30 to-slate-50">
-        {children}
+      <body className="min-h-full flex flex-col mesh-bg relative overflow-x-hidden">
+        {/* Floating orbs */}
+        <div className="fixed inset-0 pointer-events-none z-0" aria-hidden="true">
+          <div className="floating-orb" />
+          <div className="floating-orb" />
+          <div className="floating-orb" />
+        </div>
+        <div className="relative z-10 flex flex-col min-h-full">
+          {children}
+        </div>
       </body>
     </html>
   );
