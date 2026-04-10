@@ -196,7 +196,8 @@ body {
 }
 
 .hover-wiggle:hover {
-  animation: wiggle 0.4s ease-in-out;
+  transform: rotate(-2deg);
+  transition: transform 0.15s ease-in-out;
 }
 
 /* ===== Glow effects ===== */
@@ -233,9 +234,13 @@ body {
 }
 
 /* ===== Stagger children ===== */
+@keyframes stagger-in {
+  0% { opacity: 0; transform: translateY(16px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
 .stagger-children > * {
-  opacity: 0;
-  animation: fade-in-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: stagger-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .stagger-children > *:nth-child(1) { animation-delay: 0.05s; }

@@ -61,10 +61,10 @@ export default function VoiceInput({ lang, onTranscript, labels }: VoiceInputPro
     <button
       type="button"
       onClick={toggleListening}
-      className={`relative flex items-center gap-2 px-4 py-3 rounded-xl font-medium transition-all duration-200 cursor-pointer ${
+      className={`relative flex items-center gap-2 px-5 py-3.5 rounded-xl font-semibold transition-all duration-300 cursor-pointer ${
         isListening
-          ? "bg-red-500 text-white shadow-lg shadow-red-200"
-          : "bg-white text-gray-700 border-2 border-gray-200 hover:border-primary hover:text-primary"
+          ? "bg-gradient-to-r from-red-500 to-rose-500 text-white shadow-lg shadow-red-200/50 scale-105"
+          : "glass-card border border-gray-200/50 text-gray-700 hover:border-rose-300 hover:text-rose-600 hover:shadow-md"
       }`}
     >
       {isListening && (

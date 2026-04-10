@@ -21,52 +21,56 @@ export default function AnalysisResult({ analysis, lang }: AnalysisResultProps) 
   const labels = t[lang];
 
   const severityConfig = {
-    low: { color: "bg-green-100 text-green-800 border-green-200", label: lang === "bn" ? "কম" : "Low" },
-    medium: { color: "bg-amber-100 text-amber-800 border-amber-200", label: lang === "bn" ? "মাঝারি" : "Medium" },
-    high: { color: "bg-red-100 text-red-800 border-red-200", label: lang === "bn" ? "উচ্চ" : "High" },
+    low: { gradient: "from-green-400 to-emerald-500", bg: "bg-green-50", text: "text-green-700", border: "border-green-200", label: lang === "bn" ? "কম" : "Low" },
+    medium: { gradient: "from-amber-400 to-orange-500", bg: "bg-amber-50", text: "text-amber-700", border: "border-amber-200", label: lang === "bn" ? "মাঝারি" : "Medium" },
+    high: { gradient: "from-red-400 to-rose-500", bg: "bg-red-50", text: "text-red-700", border: "border-red-200", label: lang === "bn" ? "উচ্চ" : "High" },
   };
 
   const severity = severityConfig[analysis.severity] || severityConfig.low;
 
   return (
-    <div className="animate-fade-in-up space-y-4">
+    <div className="space-y-4">
       {/* Warning banner */}
       {analysis.warning && (
-        <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3">
-          <span className="text-2xl">🚨</span>
-          <p className="text-red-800 font-medium">{analysis.warning}</p>
+        <div className="animate-scale-in bg-gradient-to-r from-red-500 to-rose-500 rounded-2xl p-5 flex items-start gap-3 text-white shadow-lg shadow-red-200/50">
+          <span className="text-3xl">🚨</span>
+          <p className="font-semibold">{analysis.warning}</p>
         </div>
       )}
 
       {/* Summary + Department */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-        <div className="flex flex-wrap items-center gap-3 mb-3">
-          <span className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
+      <div className="glass-card-strong rounded-2xl shadow-md p-6 animate-fade-in-up">
+        <div className="flex flex-wrap items-center gap-3 mb-4">
+          <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">
             {labels.departmentLabel}
           </span>
-          <span className="px-3 py-1 bg-sky-100 text-sky-800 rounded-full font-bold text-sm">
+          <span className="px-4 py-1.5 bg-gradient-to-r from-sky-500 to-blue-500 text-white rounded-full font-bold text-sm shadow-md">
             {analysis.departmentName}
           </span>
-          <span className={`px-3 py-1 rounded-full font-medium text-sm border ${severity.color}`}>
+          <span className={`px-4 py-1.5 bg-gradient-to-r ${severity.gradient} text-white rounded-full font-bold text-sm shadow-md`}>
             {lang === "bn" ? "তীব্রতা" : "Severity"}: {severity.label}
           </span>
         </div>
-        <p className="text-gray-700 leading-relaxed">{analysis.summary}</p>
+        <p className="text-gray-700 leading-relaxed text-base">{analysis.summary}</p>
       </div>
 
       {/* Treatment advice */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-        <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
-          <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
+      <div className="glass-card-strong rounded-2xl shadow-md p-6 animate-fade-in-up" style={{ animationDelay: "0.1s" }}>
+        <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2 text-lg">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center shadow-md">
+            <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
           {labels.treatmentTitle}
         </h3>
-        <ul className="space-y-2">
+        <ul className="space-y-3 stagger-children">
           {(Array.isArray(analysis.treatmentAdvice) ? analysis.treatmentAdvice : [analysis.treatmentAdvice]).map(
             (advice, i) => (
-              <li key={i} className="flex items-start gap-2 text-gray-700">
-                <span className="mt-1 w-2 h-2 rounded-full bg-sky-400 shrink-0" />
+              <li key={i} className="flex items-start gap-3 text-gray-700">
+                <div className="mt-0.5 w-6 h-6 rounded-md bg-gradient-to-br from-sky-100 to-violet-100 flex items-center justify-center shrink-0 text-xs font-bold text-violet-600">
+                  {i + 1}
+                </div>
                 <span>{typeof advice === "string" ? advice : String(advice)}</span>
               </li>
             )
@@ -75,8 +79,9 @@ export default function AnalysisResult({ analysis, lang }: AnalysisResultProps) 
       </div>
 
       {/* Disclaimer */}
-      <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800">
-        {labels.disclaimer}
+      <div className="glass-card rounded-2xl p-4 text-sm flex items-start gap-3 border border-amber-200/50 animate-fade-in-up" style={{ animationDelay: "0.2s" }}>
+        <span className="text-xl">⚠️</span>
+        <p className="text-amber-800">{labels.disclaimer}</p>
       </div>
     </div>
   );
